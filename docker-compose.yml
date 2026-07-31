@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+
+  mysql:
+    image: mysql:5.6
+    container_name: mysql
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+
+  glassfish:
+    image: airhacks/glassfish
+    container_name: glassfish
+    restart: unless-stopped
+    ports:
+      - "8181:8181"
+      - "4848:4848"
+    depends_on:
+      - mysql
