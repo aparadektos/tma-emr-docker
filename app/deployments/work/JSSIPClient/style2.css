@@ -1,0 +1,172 @@
+/**
+ * Layout generated with http://layzilla.com
+ * Layout generator is free of use.
+ * We appreciate if you leave this comment block in commercial use of generator.
+ * All comment and ideas can be submitted to us using contacts below.
+ *
+ *    site: www.jmholding.lv
+ *   email: info@jmholding.lv
+ *  twitter: @jmholding_lv
+ */
+html, body {
+
+}
+
+.content {
+	min-height: 100%;
+	position: relative;
+	overflow: auto;
+	
+}
+
+.background {
+	position: absolute;
+	
+	top: 0;
+	bottom: 0;
+	margin: 0;
+	padding: 0;
+}
+
+.top_block {
+	width: 100%;
+	display: block; 
+}
+
+.bottom_block {
+	position: absolute;
+	width: 100%;
+	display: block;
+	bottom: 0; 
+}
+
+.left_block {
+	display: block;
+	float: left; 
+	height: 100%;
+}
+
+.right_block {
+	display: block;
+	float: right; 
+}
+
+.center_block {
+	display: block;
+	width: auto; 
+}
+
+.block_1 {
+	width: 100%;
+	height: 150px;
+	background-color: #79a5c2;
+}
+
+.block_2 {
+	width: 100%;
+	height: 50px;
+	background-color: #0f4d79;
+}
+
+.background.block_6 {
+	display:block;
+	height: 100%; 
+	padding-bottom: 0;
+	left: 0px;
+	right: 0;
+	background-color: #657991;
+	margin-top: 51px;
+	/*margin-bottom: 120px;*/
+	margin-left: 0px; 
+}
+
+.block_6 {
+	width: auto;
+	height: 100%;
+	/*left: 10px;
+	padding-bottom: 120px;*/
+}
+
+
+ .callist{
+        	position: absolute;
+            float: right;
+            margin-top: 110px;        
+            
+            width:100%;
+            height:100%;
+        }
+        
+  .videoInCall
+        {
+            display:inline;
+            position:relative;
+            float: left;
+            
+			
+			width:85%;
+        }
+
+        .videobtn
+        {
+            display:inline;
+            position:relative;
+            float: left;
+            
+            
+			width:15%;
+        }
+        
+        
+            .callbtn{
+        	width: 120px;
+         max-width: 120px;
+        	height: 120px;
+        	/*min-width: 70px;
+        	min-height: 70px;*/
+        }
+        
+        .callbtn:hover{
+        	width: 120px;
+        	height: 120px;
+        	background-color: #72b0bc;
+        }
+        
+        .callbtn:active{
+        	width: 120px;
+        	height: 120px;
+        	background-color: InfoBackground;
+        }
+        
+        
+        
+        .h1 { color: #fff; text-shadow: 0 0 10px; rgba(0,0,0,0.3); font-family: Klavika;letter-spacing:1px; text-align: left; width: 100%; float: left ; display: inline;font-size: 22px;    }
+
+		  .h2 { color: #fff; text-shadow: 0 0 10px; rgba(0,0,0,0.3);font-family: Klavika;letter-spacing:1px; text-align: left; width: auto; float: left ; display: inline;    }
+		  
+		  .h3 { color: #fff; text-shadow: 0 0 10px; rgba(0,0,0,0.3);font-family: KlavikaR;letter-spacing:1px; text-align: left; width: auto; float: left ; display: inline;  font-size: 34px;     }
+        
+		  .h4 { color: #fff; text-shadow: 0 0 10px; rgba(0,0,0,0.3); font-family: KlavikaB;letter-spacing:1px; text-align: left; width: auto; float: right ; display: inline;    }
+        input {
+            width: 90%;
+            margin-bottom: 10px;
+            background: rgba(0,0,0,0.3);
+            border: none;
+            outline: none;
+            padding: 10px;
+            font-size: 13px;
+            color: #fff;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+            border: 1px solid rgba(0,0,0,0.3);
+            border-radius: 4px;
+            box-shadow: inset 0 -5px 45px rgba(100,100,100,0.2), 0 1px 1px rgba(255,255,255,0.2);
+            -webkit-transition: box-shadow .5s ease;
+            -moz-transition: box-shadow .5s ease;
+            -o-transition: box-shadow .5s ease;
+            -ms-transition: box-shadow .5s ease;
+            transition: box-shadow .5s ease;
+        }
+        input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgba(255,255,255,0.2); }
+
+
+

@@ -1,0 +1,296 @@
+﻿<!doctype html>
+<html>
+<head>
+	<title>TMA Consultant video system</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link href="style.css" type="text/css" rel="stylesheet" />
+    <script type="text/javascript" src="scripts/jquery-2.2.3.min.js"></script>
+    <script type="text/javascript" src="scripts/jssip-0.7.17.js"></script>
+    
+</head>
+<body>
+	<div class="content">
+
+		<div class="top_block headerBlock block_1">
+			<div class="content">
+			<table border="0" width="100%" style="padding-left: 2%;">
+        <tbody ><tr>
+            <td valign="middle" class="h1">
+                <font color="white" style="font-size: 2.2em;">Primemarine Telemedicine System</font>
+                <p><em style="font-size: x-large; font-weight: bold;"> Video Conferencing system</em></p>
+            </td>            
+            <td><label class="h1" style="padding-left: 2%; font: normal bold; font-family: sans-serif; font-weight: bolder;">Consultant Terminal</label></td>
+            <td align="right" valign="middle">
+                <img src="./media/TMA_LOGO_120_pixel_height.png">
+            </td>
+        </tr>        
+    </tbody></table>
+    
+			</div>
+		</div>
+		<div class="top_block subheaderBlock block_2">
+			<div class="content">
+			<label id="siplog" class="h2" style="padding-left: 3%; font-size: x-large; font-weight: bolder; color: orange;">Disconnected</label>
+			</div>
+			
+		</div>
+		<div class="background block_4">
+		</div>		
+		<div class="left_block sidebarBlock block_4">
+			<div class="content">		
+
+<div class="videobtn">
+<table width="100%" border="0" style="float: left">
+<tr>
+<th scope="row">
+<input class="callbtn" type="button" name="call" id="call"  style="background-image: url(media/WebIconConnectDo.png); background-position: center; background-repeat: no-repeat;" />
+</th>
+</tr>
+<tr>
+<th scope="row">
+<input class="callbtn" type="button" name="hungup" id="hungup" style="background-image: url(media/WebIconDisconnectUp.png); background-position: center; background-repeat: no-repeat;" />
+
+</th>
+</tr>
+<tr>
+<th scope="row">
+<input class="callbtn" type="button" name="volUp" id="volUp" style="background-image: url(media/WebIconVolumePlusEx.png); background-position: center; background-repeat: no-repeat;"  />
+</th>
+</tr>
+<tr>
+<th scope="row">
+<input class="callbtn" type="button" name="voldn" id="voldn"  style="background-image: url(media/WebIconVolumeMinusEx.png); background-position: center; background-repeat: no-repeat;" />
+</th>
+</tr>
+</table>
+ </div>
+		</div>
+				
+		</div>
+		<div class="background block_5">
+		</div>
+		<div class="left_block localBlock block_5">
+			<div class="content">
+			<video src="" id="self_video" autoplay="autoplay" class="background.block_5" width="99%"></video>
+			</div>
+		</div>
+		<div class="background block_6">
+		<video src="" id="peer_video" autoplay="autoplay" controls="controls" style="width: 95%;"></video>
+		</div>
+		<div class="center_block block_6">
+			<div class="content">
+			
+			</div>
+		</div>
+		<div class="bottom_block footerBlock block_3">
+			<div class="content">
+                <audio id="ringtone" loop="loop" preload="auto" src="./media/phoneRing2.mp3"></audio>
+			</div>
+		</div>
+	</div>
+<!-- 
+ * Layout generated with http://layzilla.com
+ * Layout generator is free of use.
+ * We appreciate if you leave this comment block in commercial use of generator.
+ * All comment and ideas can be submitted to us using contacts below.
+ *
+ *    site: www.jmholding.lv
+ *   email: info@jmholding.lv
+ *  twitter: @jmholding_lv
+ -->
+
+
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+
+            var ua;
+            var uax;
+            var selfView = document.getElementById('self_video');
+            var remoteView = document.getElementById('peer_video');
+            var siplog = document.getElementById("siplog");
+            var ringtone = document.getElementById("ringtone");
+            var session;
+            var incomingSession;
+            var originator;
+            //-----obtain from url the sip number  to call and my sip number
+            var sipData = location.search.substr(location.search.indexOf("?") + 1);
+            
+            var mySIPID = sipData.substr(0, sipData.indexOf("&"));
+            var SIP2call = sipData.substr(sipData.indexOf("&") + 1);
+            /*var mySIPID = 100;
+            var SIP2call = 101;*/
+
+
+
+            var views = {
+                selfView,
+                remoteView
+            };
+
+
+            var eventHandlers = {
+                'progress': function (data) { logMessage("Trying to connect..."); },
+                'failed': function (data) { 
+                    logMessage("Failed.Reason:" + data.cause);
+                },
+                'confirmed': function (data) {
+                    selfView.src = window.URL.createObjectURL(session.connection.getLocalStreams()[0]);
+                    logMessage("Call established");
+                },
+                'addstream': function (e)
+                {
+                    var stream = e.stream; // Attach remote stream to remoteView
+                    remoteView.src = window.URL.createObjectURL(stream);
+                },
+                'ended': function (data) {
+                    logMessage("Terminated");
+                    originator = null;
+                },
+                'accepted': function (data) {
+                    logMessage("Call established");                    
+                }
+            };
+
+            var options = {
+                'eventHandlers': eventHandlers,
+                'extraHeaders': ['Company: TMA', 'System:EMR '],
+                'mediaConstraints': { 'audio': true, 'video': true,  }
+            };
+
+
+            initSIP();
+
+            function initSIP() {
+                var configuration = {
+                    'ws_servers': 'wss://primemarine.tma.com.gr:443',
+                    //'ws_servers': 'ws://192.168.1.100:10062',
+                    'uri': 'sip:'+mySIPID+'@primemarine.tma.com.gr:5060',
+                    'authorization_user': mySIPID,
+                    'realm': "primemarine.tma.com.gr",
+                    'password': 'pass1',
+                    'display_name': "Consultant"
+                };
+
+                JsSIP.debug.enable('JsSIP:*');
+                ua = new JsSIP.UA(configuration);
+                ua.start();
+
+                ua.register();
+                uax = ua;
+
+                //-----event handlers 
+                ua.on('connecting', function (data) {
+                    var attempts = data.attempts;
+                    logMessage("Connecting");
+                });
+                ua.on('connected', function (data) {
+                    var attempts = data.attempts;
+                    logMessage("Connected");
+                });
+                ua.on('newRTCSession', function (data) {
+                    originator = data.originator;
+                    session = data.session;                
+                    request = data.request;
+                    evaluateOriginator(data);
+
+                });           
+            }
+
+            $('#volUp').click(function () {                
+                volUp();
+            });
+
+            $('#voldn').click(function () {
+                
+                volDn();
+            });
+
+
+            $('#call').click(function () {
+                ringtone.pause();
+                if (originator == null)
+                    callSomeone(); else
+                    answerCall();
+            });
+
+            $('#hungup').click(function () {
+                ringtone.pause();
+                hungUp();
+            });
+
+
+            function logMessage(msg) {
+                siplog.textContent= msg;
+
+            }
+
+            function evaluateOriginator(data) {
+                originator = data.originator;
+                session = data.session;
+                request = data.request;
+                if (originator == "remote") {
+                    ringtone.play();
+                    incomingSession = data.session;
+                    incomingSession.on('addstream', function (e) {
+                        var remote_stream = e.stream;
+                        remoteView = JsSIP.rtcninja.attachMediaStream(remoteView, remote_stream);
+                        selfView.src = window.URL.createObjectURL(incomingSession.connection.getLocalStreams()[0]);
+                        
+
+
+                    });
+                    incomingSession.on('accepted', function (data) {
+                        logMessage("Call established");
+                    });
+
+                    incomingSession.on('ended', function (data) {
+                        logMessage("Call terminated");
+                        originator = null;
+                    });
+                    logMessage("INCOMING CALL!");
+                }
+            }
+                                
+
+            function callSomeone()
+            {
+                ua.call(SIP2call.toString(), options);
+            }
+
+            function answerCall()
+            {
+                if (incomingSession!=null)
+                {
+                    incomingSession.answer(options);
+                }
+            }
+
+            function volUp() {
+                if (peer_video != null) {
+                    var cvol = peer_video.volume;
+                    if (cvol < 1)
+                        peer_video.volume = cvol + 0.1 * cvol;
+                }
+            }
+
+            function volDn() {
+                if (peer_video != null) {
+                    var cvol = peer_video.volume;
+                    if (cvol > 0)
+                        peer_video.volume = cvol - 0.1 * cvol;
+                }
+            }
+
+            function hungUp() {
+                session.terminate();
+                originator = null;
+                ringtone.pause();
+            }
+
+        })
+
+    </script>
+
+</body>
+</html>

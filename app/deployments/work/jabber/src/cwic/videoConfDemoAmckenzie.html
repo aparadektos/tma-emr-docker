@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cisco Jabber SDK Demo</title>
+
+<style type="text/css">
+  		body {
+    		font-size: 12px;
+		}
+    	div#callcontainer {
+			width:300px;
+			height:85px;
+			display:none;
+			background-color: #F0F8FF;
+			border:1px solid #aaaaaa;
+		}
+		
+		div#callcontainer div.remotename {
+			float: left;
+			width: 300px;
+			height: 30px;
+			background-color: #D3D3D3;
+		}
+		
+		div#callcontainer button.endbtn {
+			float: right;
+		}	
+		
+		div#message {
+			position: absolute;
+			right: 20px;
+			top:20px;
+			font-size: 35px;
+			color: #0066CC;
+		}
+		
+        div#remotevideocontainer {
+            min-height: 273px;
+            min-width: 364px;
+            overflow: hidden;
+            background-color: #c0c0c0;
+            resize: both;
+            padding: 5px;
+            border: 1px solid #808080;
+
+        }
+        div#remotevideocontainer object {
+            min-height: 273px;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+<script src="cwic.js"></script>
+
+<script type="text/javascript">
+
+$(document.body).ready(function() {
+	$('#container').cwic('init', { 
+		ready: function() {
+			$('#remotevideocontainer').cwic('createVideoWindow',{
+				id: 'videoobject',
+				success: function(pluginid) {
+					//Video object has correctly loaded
+				}
+			});   
+		
+			$(this).cwic('registerPhone', {
+				user: 'amckenzie',
+				cucm: '198.18.133.3',
+				password: 'dCloud12345!',
+				success: function() {	
+					$('#callbtn').attr('disabled', false);
+				}	
+			});	
+		}	
+	});
+	
+	$('#callbtn').click(function() {
+		var num = $('#numtodial').val();
+		$('#container').cwic('startConversation', {
+			participant: { recipient: num },
+			videoDirection: 'SendRecv',
+			remoteVideoWindow: 'videoobject'
+		});	
+	});
+	
+	$('#container').bind('conversationStart.cwic', function(event, conversation) {	
+		$('#callcontainer .remotename').text(conversation.participant.recipient);
+		$('#callcontainer').show();
+	});	
+	
+	$('#callcontainer .endbtn').click(function() {
+		$('#container').cwic('endConversation');	
+	});
+	
+	$('#container').bind('conversationEnd.cwic', function(event, conversation) {	
+		$('#callcontainer').hide();
+	});		
+});
+
+</script>
+</head>
+
+<body>
+
+<label for="numtodial">Number to dial:</label>
+<input type="text" id="numtodial">
+<button type="button" id="callbtn" disabled="true">Make Call</button>
+<div id="container">
+	<div id="callcontainer">
+		<div class="remotename"></div>
+		<button type="button" class="endbtn">End Call</button>
+		<div id="remotevideocontainer"></div>	
+        </div>
+</div>
+
+<div id="message">developer.cisco.com/web/jabber-developer/jabber</div>
+
+</body>
+
+</html>

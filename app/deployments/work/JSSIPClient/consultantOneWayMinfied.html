@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+<head>
+	<title>TMA Consultant video system</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link href="style2.css" type="text/css" rel="stylesheet" />
+    <script type="text/javascript" src="scripts/jquery-2.2.3.min.js"></script>
+    <script type="text/javascript" src="scripts/jssip-0.7.17.js"></script>
+    
+</head>
+<body>
+	<div>	
+		<div class="top_block subheaderBlock block_2">
+			<div >
+			<label id="siplog" class="h2" style="padding-left: 3%; font-size: x-large; font-weight: bolder; color: orange;">Disconnected</label>
+			</div>			
+		</div>	
+		<div>
+		<div >
+		<audio id="ringtone" loop="loop" preload="auto" src="./media/phoneRing2.mp3"></audio>
+		
+		<div style="float:left;overflow:auto;width: 99%;">
+		<video src="" id="peer_video" autoplay="autoplay" controls="controls" style="width: 99%;"></video>		
+		</div>		
+		</div>
+		</div>
+		<div style="float:left;">
+			<div class="videobtn" style="margin-bottom: 10px;">
+			<table width="200" border="0" >
+			<tr>			
+			<th scope="row">
+<input class="callbtn" type="button" name="call" id="call"  style="background-image: url(media/WebIconConnectDo.png); background-position: center; background-repeat: no-repeat;" />
+</th>			
+			<td><th scope="row">
+<input class="callbtn" type="button" name="hungup" id="hungup" style="background-image: url(media/WebIconDisconnectUp.png); background-position: center; background-repeat: no-repeat;" />
+</th>
+			</td>
+			<td>
+			<th scope="row">
+<input class="callbtn" type="button" name="volUp" id="volUp" style="background-image: url(media/WebIconVolumePlusEx.png); background-position: center; background-repeat: no-repeat;"  />
+</th>
+			</td>
+			<td><th scope="row">
+<input class="callbtn" type="button" name="voldn" id="voldn"  style="background-image: url(media/WebIconVolumeMinusEx.png); background-position: center; background-repeat: no-repeat;" />
+</th></td>
+			</tr>
+			</table>
+			</div>
+		
+		</div>
+	</div>
+
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+
+            var ua;
+            var uax;
+            var selfView = document.getElementById('self_video');
+            var remoteView = document.getElementById('peer_video');
+            var siplog = document.getElementById("siplog");
+            var ringtone = document.getElementById("ringtone");
+            var session;
+            var incomingSession;
+            var originator;
+            //-----obtain from url the sip number  to call and my sip number
+            var sipData = location.search.substr(location.search.indexOf("?") + 1);
+            
+            var mySIPID = sipData.substr(0, sipData.indexOf("&"));
+            var SIP2call = sipData.substr(sipData.indexOf("&") + 1);
+            /*var mySIPID = 100;
+            var SIP2call = 101;*/
+
+
+
+            var views = {
+                selfView,
+                remoteView
+            };
+
+
+            var eventHandlers = {
+                'progress': function (data) { logMessage("Trying to connect..."); },
+                'failed': function (data) { 
+                    logMessage("Failed.Reason:" + data.cause);
+                },
+                'confirmed': function (data) {
+                    selfView.src = window.URL.createObjectURL(session.connection.getLocalStreams()[0]);
+                    logMessage("Call established");
+                },
+                'addstream': function (e)
+                {
+                    var stream = e.stream; // Attach remote stream to remoteView
+                    remoteView.src = window.URL.createObjectURL(stream);
+                },
+                'ended': function (data) {
+                    logMessage("Terminated");
+                    originator = null;
+                },
+                'accepted': function (data) {
+                    logMessage("Call established");                    
+                }
+            };
+
+            var options = {
+                'eventHandlers': eventHandlers,
+                'extraHeaders': ['Company: TMA', 'System:EMR '],
+                'mediaConstraints': { 'audio': true, 'video': true,  },
+                	'pcConfig': 
+					{
+				 'iceServers': [
+						{ 'urls': ['stun:stun.iptel.org', 'stun:stun.voipbuster.com'] }
+						/*{ 'urls': 'turn:example.com', 'username': 'foo', 'credential': ' 1234' }*/
+							]
+						
+						
+				}
+            };
+
+
+            initSIP();
+
+            function initSIP() {
+                var configuration = {
+                    'ws_servers': 'wss://primemarine.tma.com.gr:443',
+                    //'ws_servers': 'ws://192.168.1.100:10062',
+                    'uri': 'sip:'+mySIPID+'@primemarine.tma.com.gr:5060',
+                    'authorization_user': mySIPID,
+                    'realm': "primemarine.tma.com.gr",
+                    'password': 'pass1',
+                    'display_name': "Consultant"
+                };
+
+                JsSIP.debug.enable('JsSIP:*');
+                ua = new JsSIP.UA(configuration);
+                ua.start();
+
+                ua.register();
+                uax = ua;
+
+                //-----event handlers 
+                ua.on('connecting', function (data) {
+                    var attempts = data.attempts;
+                    logMessage("Connecting");
+                });
+                ua.on('connected', function (data) {
+                    var attempts = data.attempts;
+                    logMessage("Connected");
+                });
+                ua.on('newRTCSession', function (data) {
+                    originator = data.originator;
+                    session = data.session;                
+                    request = data.request;
+                    evaluateOriginator(data);
+
+                });           
+            }
+
+            $('#volUp').click(function () {                
+                volUp();
+            });
+
+            $('#voldn').click(function () {
+                
+                volDn();
+            });
+
+
+            $('#call').click(function () {
+                ringtone.pause();
+                if (originator == null)
+                    callSomeone(); else
+                    answerCall();
+            });
+
+            $('#hungup').click(function () {
+                ringtone.pause();
+                hungUp();
+            });
+
+
+            function logMessage(msg) {
+                siplog.textContent= msg;
+
+            }
+
+            function evaluateOriginator(data) {
+                originator = data.originator;
+                session = data.session;
+                request = data.request;
+                if (originator == "remote") {
+                    ringtone.play();
+                    incomingSession = data.session;
+                    incomingSession.on('addstream', function (e) {
+                        var remote_stream = e.stream;
+                        remoteView = JsSIP.rtcninja.attachMediaStream(remoteView, remote_stream);
+                        selfView.src = window.URL.createObjectURL(incomingSession.connection.getLocalStreams()[0]);
+                        
+
+
+                    });
+                    incomingSession.on('accepted', function (data) {
+                        logMessage("Call established");
+                    });
+
+                    incomingSession.on('ended', function (data) {
+                        logMessage("Call terminated");
+                        originator = null;
+                    });
+                    logMessage("INCOMING CALL!");
+                }
+            }
+                                
+
+            function callSomeone()
+            {
+                ua.call(SIP2call.toString(), options);
+            }
+
+            function answerCall()
+            {
+                if (incomingSession!=null)
+                {
+                    incomingSession.answer(options);
+                }
+            }
+
+            function volUp() {
+                if (peer_video != null) {
+                    var cvol = peer_video.volume;
+                    if (cvol < 1)
+                        peer_video.volume = cvol + 0.1 * cvol;
+                }
+            }
+
+            function volDn() {
+                if (peer_video != null) {
+                    var cvol = peer_video.volume;
+                    if (cvol > 0)
+                        peer_video.volume = cvol - 0.1 * cvol;
+                }
+            }
+
+            function hungUp() {
+                session.terminate();
+                originator = null;
+                ringtone.pause();
+            }
+
+        })
+
+    </script>
+
+</body>
+</html>

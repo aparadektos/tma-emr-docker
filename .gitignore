@@ -1,0 +1,17 @@
+# MySQL data
+mysql/data/
+
+# Redis
+redis/data/
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.*
+
+# Dependencies
+vendor/
+node_modules/
